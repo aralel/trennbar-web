@@ -302,8 +302,7 @@ img {
   transform: translateY(-1px);
 }
 
-.button-primary,
-.store-links a {
+.button-primary {
   background: linear-gradient(135deg, #f0c94c, #d4af37);
   color: #111;
 }
@@ -313,6 +312,22 @@ img {
   background: rgba(255, 255, 255, 0.03);
   border-color: rgba(212, 175, 55, 0.28);
   color: var(--gold-soft);
+}
+
+.store-badge-link {
+  display: inline-block;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.store-badge-link:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.store-badge {
+  height: 52px;
+  width: auto;
+  display: block;
 }
 
 .is-disabled {
