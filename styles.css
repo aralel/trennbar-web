@@ -586,6 +586,12 @@ img {
 
   .header-bar {
     flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .brand {
+    width: 100%;
   }
 
   .nav-links {
@@ -597,18 +603,51 @@ img {
     width: 100%;
   }
 
+  .footer-column {
+    padding-top: 0.95rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
   .metric-strip {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 640px) {
+  .site-header {
+    padding: 0.72rem 0;
+  }
+
   .hero {
-    padding-top: 2.8rem;
+    padding-top: 2.2rem;
+  }
+
+  .page-hero {
+    padding-top: 2.6rem;
   }
 
   .container {
     width: min(calc(100% - 1.2rem), var(--max-width));
+  }
+
+  .header-bar {
+    gap: 0.8rem;
+    padding: 0.75rem;
+    border-radius: 20px;
+  }
+
+  .brand-logo {
+    width: 2.7rem;
+    height: 2.7rem;
+    border-radius: 14px;
+  }
+
+  .brand-title {
+    font-size: 0.74rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.88rem;
   }
 
   .hero-card,
@@ -632,7 +671,20 @@ img {
   }
 
   .nav-links {
-    gap: 0.55rem;
+    gap: 0.45rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
   }
 
   .store-links a,
@@ -644,10 +696,57 @@ img {
   }
 
   .nav-links a {
-    flex: 1 1 calc(50% - 0.55rem);
+    flex: 0 0 auto;
+    min-height: 2.35rem;
+    padding: 0 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .header-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+  }
+
+  .hero-grid {
+    gap: 1.35rem;
+  }
+
+  .metric-strip {
+    margin-top: 0.85rem;
   }
 
   .footer-grid {
-    padding: 1.1rem;
+    gap: 0.95rem;
+    padding: 1rem;
+    border-radius: 24px;
+  }
+
+  .footer-summary {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .footer-column {
+    gap: 0.55rem;
+    padding-top: 0.85rem;
+  }
+
+  .footer-links {
+    gap: 0.55rem;
+  }
+
+  .footer-links a {
+    font-size: 0.9rem;
+  }
+
+  .footer-bottom {
+    gap: 0.45rem;
+    padding-top: 0.85rem;
+  }
+
+  .footer-note {
+    font-size: 0.82rem;
   }
 }
