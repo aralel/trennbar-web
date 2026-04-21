@@ -5,7 +5,7 @@ Static website for `Cyrus Cylinder`.
 Files:
 - `index.html`: marketing landing page
 - `privacy.html`: privacy policy
-- `terms.html`: terms of service
+- `terms.html`: terms of use (EULA)
 - `styles.css`: shared site styles
 - `app-links.js`: shared Google Play / App Store links
 
@@ -13,10 +13,8 @@ Files:
 
 Update these values in `app-links.js`:
 
-- `appStoreUrl`
-- `supportEmail`
-
-`googlePlayUrl` is already set to `com.aralel.trennbare`.
+- `APP_STORE_URL`
+- `GOOGLE_PLAY_URL`
 
 ## Local preview
 

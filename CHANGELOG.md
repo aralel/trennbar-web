@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-04-21
+
+### Changed
+- Updated `README.md` publishing instructions to match current `app-links.js` constants
+- Cleaned up `styles.css` by removing redundant `.terms-grid` flex selector to avoid conflicting display declarations
+
 ## 2026-03-11
 
 ### Changed
