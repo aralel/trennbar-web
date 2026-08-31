@@ -1,0 +1,44 @@
+{%- comment -%}
+The one header every page wears — marketing and explorer alike. Nav highlights
+the current page; the marketing anchors only make sense on the home page, so
+they link back to it from anywhere else.
+{%- endcomment -%}
+<header class="site-header">
+  <div class="container">
+    <div class="header-bar">
+      <a
+        class="brand"
+        href="{{ '/' | relative_url }}"
+        aria-label="Cyrus Cylinder home"
+      >
+        <img class="brand-logo" src="{{ '/logo.png' | relative_url }}" alt="Cyrus Cylinder logo" />
+        <span class="brand-copy">
+          <span class="brand-title">{{ site.title }}</span>
+          <span class="brand-subtitle">{{ site.tagline }}</span>
+        </span>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary">
+        {%- assign home_url = '/' | relative_url -%}
+        <a href="{{ home_url }}#features"{% if page.url == '/' %} class="is-current"{% endif %}>Features</a>
+        <a href="{{ home_url }}#how-it-works">How It Works</a>
+        {%- assign explorer_pages = "/explorer/,Explorer|/prefixes/,Prefixes|/suffixes/,Suffixes" | split: "|" -%}
+        {%- for item in explorer_pages -%}
+          {%- assign parts = item | split: "," -%}
+          <a
+            href="{{ parts[0] | relative_url }}"
+            {% if page.url == parts[0] %}class="is-current" aria-current="page"{% endif %}
+          >{{ parts[1] }}</a>
+        {%- endfor -%}
+      </nav>
+
+      <div class="header-actions">
+        <a
+          class="header-cta"
+          data-store-link="smart-store"
+          href="{{ site.google_play_url }}"
+        >Get the app</a>
+      </div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,72 @@
+{%- comment -%}
+A clickable, countable facet list for one word segment.
+
+Parameters:
+  facet     "prefix" or "suffix" — the row attribute this panel filters on
+  title     panel heading
+  entries   array of { value, count } sorted count-descending
+  noun      what the counts count, for the aria-labels ("words")
+
+Every count and bar length is rendered here at build time, so the page is a
+complete, readable ranking with JavaScript switched off. The script only ever
+narrows what is already on screen.
+{%- endcomment -%}
+{%- assign entries = include.entries -%}
+{%- comment -%}
+Bars are scaled to the largest *named* affix, and the "no prefix" bucket gets no
+bar at all. It is by far the biggest group (948 of 3,383 words have no prefix),
+so including it in the scale would squash every real affix into the first tenth
+of the track and destroy the comparison the panel exists for. It is not an affix
+being compared — it is the absence of one — so its count is shown as a number
+and left off the chart rather than misdrawn on it.
+{%- endcomment -%}
+{%- assign named_entries = entries | where_exp: 'entry', 'entry.value != ""' -%}
+{%- assign max_count = named_entries[0].count -%}
+{%- assign named_count = named_entries | size -%}
+
+<section class="facet-panel" data-facet-panel="{{ include.facet }}">
+  <div class="facet-panel-head">
+    <h2 class="facet-panel-title">
+      {{ include.title }}<span>{% include number.html value=named_count %}</span>
+    </h2>
+    <button
+      type="button"
+      class="facet-sort"
+      data-sort-toggle="{{ include.facet }}"
+      data-sort="count"
+      aria-label="Sort {{ include.title | downcase }} alphabetically"
+    >
+      By count
+    </button>
+  </div>
+
+  <ul class="facet-list" data-facet-list="{{ include.facet }}">
+    {%- for entry in entries -%}
+      {%- assign percent = entry.count | times: 100.0 | divided_by: max_count | round: 1 -%}
+      {%- if percent > 100 -%}{%- assign percent = 100 -%}{%- endif -%}
+      <li class="facet-item" data-facet-item="{{ include.facet }}">
+        <button
+          type="button"
+          class="facet-button"
+          data-facet="{{ include.facet }}"
+          data-value="{{ entry.value | escape }}"
+          data-total="{{ entry.count }}"
+          aria-pressed="false"
+        >
+          <span class="facet-name{% if entry.value == '' %} facet-name--none{% endif %}">
+            {%- if entry.value == '' -%}no {{ include.facet }}{%- else -%}{{ entry.value }}{%- endif -%}
+          </span>
+          <span class="facet-count"
+            ><span data-count>{% include number.html value=entry.count %}</span>
+            <span class="visually-hidden"> {{ include.noun }}</span></span
+          >
+          {%- if entry.value != '' -%}
+            <span class="facet-bar" aria-hidden="true"
+              ><span class="facet-bar-fill" data-bar style="width: {{ percent }}%"></span
+            ></span>
+          {%- endif -%}
+        </button>
+      </li>
+    {%- endfor -%}
+  </ul>
+</section>

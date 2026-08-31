@@ -1,0 +1,158 @@
+---
+layout: default
+title: Cyrus Cylinder | Dictionary Explorer
+permalink: /explorer/
+wide: true
+description: >-
+  Every German word in the Cyrus Cylinder dictionary, filterable by prefix and
+  suffix and searchable by stem.
+scripts:
+  - /explorer.js
+---
+
+{%- assign dictionary = site.data.dictionary -%}
+{%- assign meta = dictionary.meta -%}
+
+<section class="section page-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">The dictionary</span>
+      <h1>Every word in the app</h1>
+      <p>
+        {% include number.html value=meta.wordCount %} German words, each split into the three
+        segments the app's cylinders turn: a prefix, a stem and a suffix. Click a prefix or a
+        suffix to filter the list — the other column recounts itself against your selection, so
+        you can read off how many words any pairing actually builds.
+      </p>
+    </div>
+
+    <ul class="stat-row">
+      <li class="panel stat-tile">
+        <span class="stat-tile-value">{% include number.html value=meta.wordCount %}</span>
+        <span class="stat-tile-label">words</span>
+      </li>
+      <li class="panel stat-tile">
+        <span class="stat-tile-value">{% include number.html value=meta.prefixCount %}</span>
+        <span class="stat-tile-label">distinct prefixes</span>
+      </li>
+      <li class="panel stat-tile">
+        <span class="stat-tile-value">{% include number.html value=meta.suffixCount %}</span>
+        <span class="stat-tile-label">distinct suffixes</span>
+      </li>
+      <li class="panel stat-tile">
+        <span class="stat-tile-value">{% include number.html value=meta.stemCount %}</span>
+        <span class="stat-tile-label">distinct stems</span>
+      </li>
+      <li class="panel stat-tile">
+        <span class="stat-tile-value">{% include number.html value=meta.fullWordCount %}</span>
+        <span class="stat-tile-label">have both affixes</span>
+      </li>
+    </ul>
+
+    <noscript>
+      <p class="no-js-note">
+        The full list and every count below are rendered into the page, so they read fine
+        without JavaScript. Live filtering and search need it — the
+        <a href="{{ '/prefixes/' | relative_url }}">prefix</a> and
+        <a href="{{ '/suffixes/' | relative_url }}">suffix</a> rankings work either way.
+      </p>
+    </noscript>
+
+    <div class="panel toolbar">
+      <div class="search-field">
+        <span class="search-field-icon" aria-hidden="true">⌕</span>
+        <label class="visually-hidden" for="word-search">Search words and stems</label>
+        <input
+          type="search"
+          id="word-search"
+          placeholder="Search a word or stem — try ziehen"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <p class="result-count" id="result-count" role="status">
+        <strong>{% include number.html value=meta.wordCount %}</strong> of
+        {% include number.html value=meta.wordCount %} words
+      </p>
+
+      <div class="active-filters" id="active-filters"></div>
+
+      <button type="button" class="button-quiet" id="clear-filters" disabled>Clear filters</button>
+    </div>
+
+    <div class="explorer" data-explorer>
+      <div class="facet-column">
+        {% include facet-panel.html facet="prefix" title="Prefixes" entries=dictionary.prefixes noun="words" %}
+        {% include facet-panel.html facet="suffix" title="Suffixes" entries=dictionary.suffixes noun="words" %}
+      </div>
+
+      <div class="panel word-panel">
+        <div class="segment-key">
+          <span class="segment-key-item">
+            <span class="segment-key-swatch" style="background: var(--gold-soft)" aria-hidden="true"></span>
+            prefix
+          </span>
+          <span class="segment-key-item">
+            <span class="segment-key-swatch" style="background: var(--text)" aria-hidden="true"></span>
+            stem
+          </span>
+          <span class="segment-key-item">
+            <span class="segment-key-swatch" style="background: var(--clay)" aria-hidden="true"></span>
+            suffix
+          </span>
+          <span class="segment-key-item">Columns repeat each segment, so the colours are never the only cue.</span>
+        </div>
+
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Word</th>
+                <th scope="col">Prefix</th>
+                <th scope="col">Stem</th>
+                <th scope="col">Suffix</th>
+              </tr>
+            </thead>
+        {%- comment -%}
+          3,383 rows land in this table, so anything repeated per row is
+          repeated 3,383 times. Two things follow, and both are why this loop is
+          written flat against the left margin rather than indented into place:
+
+          - the rows carry only what cannot be read off their own cells. The
+            search haystack is built in JavaScript from the word and stem cells
+            instead of being duplicated into `data-` attributes.
+          - the affix cells take their styling from a positional selector
+            (`td + td` in styles.css) rather than repeating a class attribute
+            three times a row.
+
+          Together with the flat indentation that is roughly half the page
+          weight, for markup that renders identically.
+        {%- endcomment -%}
+            <tbody id="word-rows">
+{%- for entry in dictionary.words -%}
+<tr data-prefix="{{ entry.prefix | escape }}" data-suffix="{{ entry.suffix | escape }}">
+<td class="cell-word">{% if entry.prefix != '' %}<span class="seg-prefix">{{ entry.prefix }}</span>{% endif %}<span class="seg-stem">{{ entry.stem }}</span>{% if entry.suffix != '' %}<span class="seg-suffix">{{ entry.suffix }}</span>{% endif %}</td>
+<td{% if entry.prefix == '' %} class="is-none"{% endif %}>{% if entry.prefix == '' %}—{% else %}{{ entry.prefix }}{% endif %}</td>
+<td>{{ entry.stem }}</td>
+<td{% if entry.suffix == '' %} class="is-none"{% endif %}>{% if entry.suffix == '' %}—{% else %}{{ entry.suffix }}{% endif %}</td>
+</tr>
+{%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+
+        <p class="empty-state" id="empty-state" hidden>
+          No words match this combination.
+          <button type="button" class="button-quiet" data-clear-inline>Clear filters</button>
+        </p>
+      </div>
+    </div>
+
+    <p class="note">
+      {% include number.html value=meta.fullWordCount %} of the
+      {% include number.html value=meta.wordCount %} entries carry a prefix <em>and</em> a
+      suffix — the rest use one or the other. Filter both columns at once to see that pool.
+    </p>
+  </div>
+</section>

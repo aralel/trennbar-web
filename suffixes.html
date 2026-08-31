@@ -1,0 +1,34 @@
+---
+layout: default
+title: Cyrus Cylinder | Words per suffix
+permalink: /suffixes/
+wide: true
+description: >-
+  How many words each German suffix builds in the Cyrus Cylinder dictionary,
+  ranked largest group first.
+---
+
+{%- assign dictionary = site.data.dictionary -%}
+
+<section class="section page-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">The dictionary</span>
+      <h1>Words per suffix</h1>
+      <p>
+        Every suffix in the dictionary with the number of words it builds. Click one to open
+        the word list filtered to it.
+      </p>
+    </div>
+
+    {% include affix-ranking.html facet="suffix" entries=dictionary.suffixes meta=dictionary.meta %}
+
+    <p class="note">
+      Two thirds of the dictionary carries no suffix at all — those entries are verbs built
+      from a prefix and a stem. The suffixes that do appear are mostly derivational endings
+      that turn a stem into a noun or an adjective (<em>-ismus</em>, <em>-ist</em>,
+      <em>-schaft</em>, <em>-keit</em>), so they cluster on the nouns rather than the separable
+      verbs.
+    </p>
+  </div>
+</section>

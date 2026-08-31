@@ -1,0 +1,84 @@
+{%- comment -%}
+The full ranking of one affix kind, largest group first.
+
+Parameters:
+  facet     "prefix" or "suffix"
+  title     plural heading, e.g. "Prefixes"
+  entries   array of { value, count, examples } sorted count-descending
+  meta      site.data.dictionary.meta
+
+The empty-value bucket is filtered out here. This page ranks affixes, and "no
+prefix" is not one — it is reported as its own figure above the table instead,
+where it cannot distort the bar scale.
+{%- endcomment -%}
+{%- assign facet = include.facet -%}
+{%- assign meta = include.meta -%}
+{%- assign named = include.entries | where_exp: 'entry', 'entry.value != ""' -%}
+{%- assign max_count = named[0].count -%}
+{%- assign unaffixed = include.entries | where_exp: 'entry', 'entry.value == ""' -%}
+{%- assign unaffixed_count = unaffixed[0].count | default: 0 -%}
+{%- assign affixed_count = meta.wordCount | minus: unaffixed_count -%}
+
+<ul class="stat-row">
+  <li class="panel stat-tile">
+    <span class="stat-tile-value">{% include number.html value=named.size %}</span>
+    <span class="stat-tile-label">distinct {{ facet }}es</span>
+  </li>
+  <li class="panel stat-tile">
+    <span class="stat-tile-value">{% include number.html value=affixed_count %}</span>
+    <span class="stat-tile-label">words carrying one</span>
+  </li>
+  <li class="panel stat-tile">
+    <span class="stat-tile-value">{% include number.html value=unaffixed_count %}</span>
+    <span class="stat-tile-label">words with no {{ facet }}</span>
+  </li>
+  <li class="panel stat-tile">
+    <span class="stat-tile-value">{{ named[0].value }}</span>
+    <span class="stat-tile-label">largest group · {% include number.html value=max_count %} words</span>
+  </li>
+</ul>
+
+<div class="panel word-panel">
+  <div class="table-scroll">
+    <table class="data-table rank-table">
+      <caption>
+        Every {{ facet }} in the dictionary, most words first. Bars share one scale — the
+        {{ named[0].value }} group at {% include number.html value=max_count %} words is the full
+        track. The {% include number.html value=unaffixed_count %} words with no {{ facet }} are
+        counted above rather than ranked here.
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">{{ facet | capitalize }}</th>
+          <th scope="col" class="numeric">Words</th>
+          <th scope="col" class="numeric">Share</th>
+          <th scope="col"><span class="visually-hidden">Relative size</span></th>
+          <th scope="col">Examples</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for entry in named -%}
+          {%- assign percent_of_max = entry.count | times: 100.0 | divided_by: max_count | round: 1 -%}
+          {%- assign share = entry.count | times: 100.0 | divided_by: meta.wordCount | round: 1 -%}
+          <tr>
+            <td class="cell-rank">{{ forloop.index }}</td>
+            <th scope="row" class="cell-affix-name">
+              <a class="affix-link" href="{{ '/explorer/' | relative_url }}?{{ facet }}={{ entry.value | uri_escape }}"
+                >{{ entry.value }}</a
+              >
+            </th>
+            <td class="numeric">{% include number.html value=entry.count %}</td>
+            <td class="numeric">{{ share }}%</td>
+            <td class="cell-bar">
+              <span class="rank-bar" aria-hidden="true"
+                ><span class="rank-bar-fill" style="width: {{ percent_of_max }}%"></span
+              ></span>
+            </td>
+            <td class="cell-examples">{{ entry.examples | join: ', ' }}</td>
+          </tr>
+        {%- endfor -%}
+      </tbody>
+    </table>
+  </div>
+</div>

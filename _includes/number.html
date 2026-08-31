@@ -1,0 +1,14 @@
+{%- comment -%}
+Thousands-separated integer. Liquid has no number-formatting filter, and the
+counts on these pages read badly as "3383".
+
+Handles values up to 999,999 — an order of magnitude above the largest number
+this dictionary produces (the total word count). Anything larger would need a
+second group and is not worth the Liquid.
+{%- endcomment -%}
+{%- assign value = include.value | plus: 0 -%}
+{%- if value >= 1000 -%}
+{{- value | divided_by: 1000 }},{{ value | modulo: 1000 | prepend: '00' | slice: -3, 3 -}}
+{%- else -%}
+{{- value -}}
+{%- endif -%}

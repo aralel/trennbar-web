@@ -1,0 +1,33 @@
+---
+layout: default
+title: Cyrus Cylinder | Words per prefix
+permalink: /prefixes/
+wide: true
+description: >-
+  How many words each German prefix builds in the Cyrus Cylinder dictionary,
+  ranked largest group first.
+---
+
+{%- assign dictionary = site.data.dictionary -%}
+
+<section class="section page-hero">
+  <div class="container">
+    <div class="section-header">
+      <span class="eyebrow">The dictionary</span>
+      <h1>Words per prefix</h1>
+      <p>
+        Every prefix in the dictionary with the number of words it builds. Click one to open
+        the word list filtered to it.
+      </p>
+    </div>
+
+    {% include affix-ranking.html facet="prefix" entries=dictionary.prefixes meta=dictionary.meta %}
+
+    <p class="note">
+      Separable verb prefixes (<em>ab</em>, <em>aus</em>, <em>ein</em>, <em>ver</em>) dominate
+      the head of this list; the lowercase ones are the prefixes the app's first cylinder turns.
+      The capitalised entries (<em>Haus</em>, <em>Welt</em>, <em>Volks</em>) are noun compounds,
+      which is why they sit in the long tail — each contributes only a handful of words.
+    </p>
+  </div>
+</section>

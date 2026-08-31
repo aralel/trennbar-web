@@ -17,4 +17,33 @@
   document.querySelectorAll('[data-store-link="smart-store"]').forEach(function (node) {
     node.setAttribute('href', preferredStoreUrl);
   });
+
+  /*
+   * Publishes the sticky header's real height as --site-header-height, which
+   * the explorer's sticky table header and facet column anchor to.
+   *
+   * It cannot be a constant: the header bar wraps to two or three rows on a
+   * narrow screen, so a hard-coded offset leaves the table header either
+   * overlapping the site header or floating below it. Lives here rather than
+   * in explorer.js because it describes the header, and the ranking pages need
+   * it without loading the explorer script.
+   */
+  var siteHeader = document.querySelector('.site-header');
+
+  if (siteHeader) {
+    var publishHeaderHeight = function () {
+      document.documentElement.style.setProperty(
+        '--site-header-height',
+        siteHeader.offsetHeight + 'px'
+      );
+    };
+
+    publishHeaderHeight();
+
+    if (typeof ResizeObserver === 'function') {
+      new ResizeObserver(publishHeaderHeight).observe(siteHeader);
+    } else {
+      window.addEventListener('resize', publishHeaderHeight);
+    }
+  }
 })();

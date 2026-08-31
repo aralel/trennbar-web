@@ -1,0 +1,57 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand-block">
+        <a class="brand brand-footer" data-store-link="smart-store" href="{{ site.google_play_url }}">
+          <img class="brand-logo" src="{{ '/logo.png' | relative_url }}" alt="Cyrus Cylinder logo" />
+          <span class="brand-copy">
+            <span class="brand-title">{{ site.title }}</span>
+            <span class="brand-subtitle">{{ site.tagline }}</span>
+          </span>
+        </a>
+        <p class="footer-summary">
+          A focused German-learning app built around rotating word parts, fast meaning feedback,
+          and repeatable practice.
+        </p>
+      </div>
+
+      <div class="footer-column">
+        <span class="footer-heading">Explore</span>
+        <div class="footer-links">
+          <a href="{{ '/' | relative_url }}#features">Features</a>
+          <a href="{{ '/' | relative_url }}#how-it-works">How It Works</a>
+          <a href="{{ '/privacy.html' | relative_url }}">Privacy Policy</a>
+          <a href="{{ '/terms.html' | relative_url }}">Terms of Use (EULA)</a>
+        </div>
+      </div>
+
+      <div class="footer-column">
+        <span class="footer-heading">The dictionary</span>
+        <div class="footer-links">
+          <a href="{{ '/explorer/' | relative_url }}">All {{ site.data.dictionary.meta.wordCount }} words</a>
+          <a href="{{ '/prefixes/' | relative_url }}">Words per prefix</a>
+          <a href="{{ '/suffixes/' | relative_url }}">Words per suffix</a>
+        </div>
+      </div>
+
+      <div class="footer-column">
+        <span class="footer-heading">Get the app</span>
+        <div class="footer-links">
+          <a data-store-link="google-play" href="{{ site.google_play_url }}">Google Play</a>
+          <a data-store-link="app-store" href="{{ site.app_store_url }}">App Store</a>
+          <a href="mailto:{{ site.support_email }}">{{ site.support_email }}</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-note">
+        © <span data-current-year></span> {{ site.title }}. Learn German by turning words.
+      </p>
+      <p class="footer-note">
+        Published by Aralel. Contact:
+        <a href="mailto:{{ site.support_email }}">{{ site.support_email }}</a>
+      </p>
+    </div>
+  </div>
+</footer>

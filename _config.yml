@@ -1,0 +1,34 @@
+# Jekyll configuration for cyrus-cylinder.aralel.com.
+#
+# The site is deliberately plugin-free so it builds identically here and on
+# GitHub Pages, which builds this repository with Jekyll natively.
+#
+# The marketing pages (index, privacy, terms) and the dictionary explorer
+# (explorer, prefixes, suffixes) share one layout, one nav and one stylesheet.
+# The explorer's word and affix data comes from `_data/dictionary.json`, which
+# is GENERATED from the app's `data.csv` — see README.md.
+
+title: Cyrus Cylinder
+tagline: German through rotating word forms
+description: >-
+  Cyrus Cylinder teaches German through rotating prefix, middle, and suffix
+  cylinders inspired by the wheel cypher.
+lang: en
+
+# The site is served from the domain root (see CNAME).
+baseurl: ''
+url: 'https://cyrus-cylinder.aralel.com'
+
+support_email: support@aralel.com
+app_store_url: https://apps.apple.com/us/app/cyrus-cylinder/id6760327600
+google_play_url: https://play.google.com/store/apps/details?id=com.aralel.trennbare
+
+markdown: kramdown
+plugins: []
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - CHANGELOG.md
+  - vendor

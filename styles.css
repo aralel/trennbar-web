@@ -14,6 +14,44 @@
   --radius-md: 18px;
   --radius-sm: 12px;
   --max-width: 1180px;
+
+  /* --- added for the dictionary explorer ------------------------------- */
+
+  /* Hover and raised steps of the existing panel surface. */
+  --panel-hover: rgba(40, 42, 48, 0.8);
+  /*
+   * Opaque on purpose. This is the sticky table header's fill: a translucent
+   * one lets the word rows scroll visibly through the column labels. It is a
+   * touch lighter than the resolved panel colour so the header still reads as
+   * raised.
+   */
+  --panel-raised: #1b1c21;
+  /* A third text step below --muted, for labels and spent options. */
+  --muted-dim: #a2977c;
+  /* Lighter steps of the gold ramp: bar tracks and selected-row washes. */
+  --gold-track: rgba(212, 175, 55, 0.16);
+  --gold-wash: rgba(212, 175, 55, 0.08);
+  /* Clay from the cylinder body — the suffix segment. */
+  --clay: #c7781f;
+
+  /*
+   * The page sets Georgia for prose. Dense data — counts, affixes, table
+   * labels — reads better in the UI sans, and the explorer's numbers need
+   * tabular figures, so those components opt into these.
+   */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /*
+   * Measured from the real header by explorer.js, because the header is sticky
+   * and wraps to two or three rows on a narrow screen — a hard-coded offset
+   * would leave the table header either overlapping it or floating below it.
+   * The fallback covers the no-JS case and the first paint.
+   */
+  --site-header-height: 5.5rem;
+
+  /* The explorer needs a facet column beside a four-column table. */
+  --max-width-wide: 1400px;
 }
 
 * {
@@ -46,7 +84,16 @@ img {
 
 .page-shell {
   position: relative;
-  overflow: hidden;
+  /*
+   * `clip`, not `hidden`. `overflow: hidden` makes this a scroll container,
+   * and therefore the sticky scrollport for everything inside it — which
+   * silently disabled the sticky `.site-header`, since this element is as tall
+   * as the page. It went unnoticed while every page was short; the explorer's
+   * 3,383-row table made it obvious. `clip` still clips, without creating a
+   * scroll container. (The ::before/::after glows are position: fixed, so they
+   * were never what this was containing.)
+   */
+  overflow: clip;
 }
 
 .page-shell::before,
@@ -748,5 +795,692 @@ img {
 
   .footer-note {
     font-size: 0.82rem;
+  }
+}
+
+/* ======================================================================== *
+ * Dictionary explorer
+ *
+ * The /explorer/, /prefixes/ and /suffixes/ pages. These reuse the site's
+ * tokens, `.container`, `.panel`, `.section-header` and `.eyebrow` rather than
+ * bringing their own palette, so the data pages and the marketing pages read
+ * as one site. Only what a dense data UI genuinely needs is new below.
+ * ======================================================================== */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 30;
+  padding: 0.6rem 1rem;
+  background: var(--gold);
+  color: #111;
+  font-weight: 700;
+  border-radius: 0 0 var(--radius-sm) 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Explorer pages widen the shell; the marketing pages keep --max-width. */
+main.is-wide .container {
+  width: min(calc(100% - 2rem), var(--max-width-wide));
+}
+
+main.is-wide .page-hero {
+  padding-top: 2.4rem;
+}
+
+.note {
+  max-width: 68ch;
+  margin: 1.5rem 0 0;
+  color: var(--muted-dim);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.no-js-note {
+  padding: 0.75rem 1rem;
+  margin: 0 0 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--gold-wash);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* --- stat tiles --------------------------------------------------------- */
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.9rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.stat-tile {
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-md);
+}
+
+.stat-tile-value {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.stat-tile-label {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  color: var(--muted-dim);
+}
+
+/* --- toolbar ------------------------------------------------------------ */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.25rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+}
+
+.search-field {
+  position: relative;
+  flex: 1 1 260px;
+  min-width: 200px;
+}
+
+.search-field input {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.5rem 0.85rem 0.5rem 2.2rem;
+  background: rgba(8, 9, 12, 0.7);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  font: inherit;
+}
+
+.search-field input::placeholder {
+  color: var(--muted-dim);
+}
+
+.search-field-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-dim);
+  pointer-events: none;
+}
+
+.search-field input:focus-visible,
+.facet-button:focus-visible,
+.button-quiet:focus-visible,
+.facet-sort:focus-visible,
+.filter-chip-clear:focus-visible,
+.skip-link:focus-visible {
+  outline: 2px solid var(--gold-soft);
+  outline-offset: 2px;
+}
+
+.result-count {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.result-count strong {
+  color: var(--text);
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.4rem 0.3rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--gold-wash);
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+.filter-chip-kind {
+  color: var(--muted-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.68rem;
+}
+
+.filter-chip-clear {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(244, 236, 216, 0.12);
+  color: var(--text);
+  font-size: 0.82rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.filter-chip-clear:hover {
+  background: var(--gold);
+  color: #111;
+}
+
+.button-quiet {
+  min-height: 2.7rem;
+  padding: 0.4rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.button-quiet:hover:not(:disabled) {
+  color: var(--gold-soft);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.button-quiet:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* --- layout ------------------------------------------------------------- */
+
+.explorer {
+  display: grid;
+  grid-template-columns: minmax(0, 330px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  font-family: var(--font-ui);
+}
+
+.facet-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: calc(var(--site-header-height) + 1rem);
+}
+
+/* --- facet panels ------------------------------------------------------- */
+
+.facet-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.facet-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.8rem 0.95rem 0.65rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.facet-panel-title {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.facet-panel-title span {
+  margin-left: 0.4rem;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--muted-dim);
+}
+
+.facet-sort {
+  padding: 0.2rem 0.55rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+
+.facet-sort:hover {
+  color: var(--gold-soft);
+}
+
+.facet-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
+  max-height: 21rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.facet-item[hidden] {
+  display: none;
+}
+
+.facet-button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.2rem 0.6rem;
+  width: 100%;
+  padding: 0.4rem 0.6rem 0.5rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.facet-button:hover {
+  background: var(--panel-hover);
+}
+
+.facet-button[aria-pressed='true'] {
+  background: var(--gold-wash);
+  border-color: var(--line);
+}
+
+.facet-name {
+  font-size: 0.94rem;
+  overflow-wrap: anywhere;
+}
+
+.facet-button[aria-pressed='true'] .facet-name {
+  color: var(--gold-soft);
+}
+
+.facet-name--none {
+  color: var(--muted-dim);
+  font-style: italic;
+}
+
+.facet-count {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.facet-item.is-empty .facet-button {
+  opacity: 0.38;
+}
+
+/*
+ * The count bar: one hue, length carries magnitude. Square where the bar
+ * starts (the baseline), rounded at the end it can reach; the track carries
+ * the same shape so a short fill is not reshaped by the clip.
+ */
+.facet-bar {
+  grid-column: 1 / -1;
+  height: 4px;
+  border-radius: 0 2px 2px 0;
+  background: var(--gold-track);
+  overflow: hidden;
+}
+
+.facet-bar-fill {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--gold);
+  transition: width 140ms ease-out;
+}
+
+/* A count of zero draws nothing. `min-width` keeps a single-word affix
+   visible, but applied to a zero it would draw a mark for no data. */
+.facet-item.is-empty .facet-bar-fill {
+  min-width: 0;
+}
+
+/* --- word table --------------------------------------------------------- */
+
+.word-panel {
+  border-radius: var(--radius-md);
+  /*
+   * `clip`, not `hidden`. `overflow: hidden` makes an element a scroll
+   * container, which becomes the sticky scrollport for anything inside it —
+   * the sticky `th` below then anchors to the top of *this panel* rather than
+   * the viewport, so it sits permanently across the first rows and never
+   * sticks while scrolling. `clip` clips the corners without creating a
+   * scroll container.
+   */
+  overflow: clip;
+}
+
+/*
+ * The word table has no horizontal scroller at any width, deliberately.
+ * `overflow-x: auto` computes `overflow-y` to `auto` as well, which makes the
+ * element a scroll container and therefore the sticky scrollport — it would
+ * stop the column labels sticking, the same trap as `.page-shell` and
+ * `.word-panel` above. The four columns fit on a wide screen as they are, and
+ * the mobile rule below drops a column rather than adding a scroller.
+ */
+@media (max-width: 700px) {
+  /*
+   * The stem is already visible as the untinted middle of the word in column
+   * one, so it is the one column that can go when space runs out — and losing
+   * it is what lets the remaining three fit a phone without sideways scrolling.
+   */
+  .data-table th:nth-child(3),
+  .data-table tbody td:nth-child(3) {
+    display: none;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding-inline: 0.6rem;
+  }
+
+  /*
+   * Fixed layout, so the table can never be wider than the panel. Left to size
+   * itself the three columns came to 383px inside a 375px phone, and
+   * `.word-panel`'s corner clipping quietly cut the Suffix column off rather
+   * than scrolling to it. The longest entry is 20 characters
+   * ("außerparlamentarisch"), which wraps rather than forcing the column wide.
+   */
+  .data-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .data-table th:nth-child(1),
+  .data-table tbody td:nth-child(1) {
+    width: 52%;
+  }
+
+  .cell-word,
+  .data-table tbody td + td {
+    overflow-wrap: anywhere;
+  }
+}
+
+.segment-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.8rem;
+  color: var(--muted-dim);
+}
+
+.segment-key-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.segment-key-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.data-table caption {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  color: var(--muted-dim);
+  font-size: 0.84rem;
+  line-height: 1.6;
+  border-bottom: 1px solid var(--line);
+}
+
+.data-table th {
+  position: sticky;
+  /* Clears the sticky site header rather than sliding underneath it. */
+  top: var(--site-header-height);
+  z-index: 1;
+  background: var(--panel-raised);
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted-dim);
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 0.45rem 1rem;
+  border-bottom: 1px solid rgba(244, 236, 216, 0.06);
+  vertical-align: baseline;
+}
+
+.data-table tbody tr:hover td {
+  background: var(--panel-hover);
+}
+
+.data-table tbody tr[hidden] {
+  display: none;
+}
+
+.data-table .numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-word {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.04rem;
+}
+
+/*
+ * Segment tinting is backed by the key above the table, and every segment also
+ * has its own column — the colour is never the only cue.
+ */
+.seg-prefix {
+  color: var(--gold-soft);
+}
+
+.seg-stem {
+  color: var(--text);
+}
+
+.seg-suffix {
+  color: var(--clay);
+}
+
+/* The three affix columns of the word table, addressed by position so the row
+   markup does not repeat a class attribute 3,383 times. */
+.data-table tbody td + td {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.data-table tbody td.is-none {
+  color: var(--muted-dim);
+  opacity: 0.55;
+}
+
+.empty-state {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty-state[hidden] {
+  display: none;
+}
+
+/* --- affix rankings ----------------------------------------------------- */
+
+/* The ranking table is a different shape from the word table — its numeric and
+   example columns keep the UI font. */
+.rank-table tbody td + td {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+}
+
+.rank-table .cell-rank {
+  width: 3.5rem;
+  color: var(--muted-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.rank-table th.cell-affix-name {
+  position: static;
+  background: transparent;
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.06rem;
+  font-weight: 400;
+  color: var(--text);
+  white-space: nowrap;
+  padding: 0.45rem 1rem;
+  border-bottom: 1px solid rgba(244, 236, 216, 0.06);
+}
+
+.rank-table .cell-bar {
+  width: 34%;
+  min-width: 140px;
+}
+
+.rank-table .cell-examples {
+  color: var(--muted);
+  font-size: 0.87rem;
+}
+
+.rank-bar {
+  /* A span in a table cell is inline, where `height` does nothing. */
+  display: block;
+  height: 14px;
+  border-radius: 0 4px 4px 0;
+  background: var(--gold-track);
+  overflow: hidden;
+}
+
+.rank-bar-fill {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--gold);
+}
+
+.affix-link {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+}
+
+.affix-link:hover {
+  color: var(--gold-soft);
+  border-bottom-color: currentColor;
+}
+
+/* --- responsive --------------------------------------------------------- */
+
+@media (max-width: 920px) {
+  .explorer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .facet-column {
+    position: static;
+  }
+
+  .facet-list {
+    max-height: 16rem;
+  }
+}
+
+/*
+ * On a phone the header bar wraps to three rows — 207px, a quarter of the
+ * viewport — and the sticky table header would sit on top of that, leaving the
+ * word list about half the screen. On the explorer pages the data is the point,
+ * so the site header scrolls away there and the column labels take top: 0
+ * instead. The marketing pages keep the sticky header they have always had.
+ */
+@media (max-width: 700px) {
+  .page-wide .site-header {
+    position: static;
+  }
+
+  .page-wide .data-table th {
+    top: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .toolbar {
+    padding: 0.85rem;
+  }
+
+  .search-field,
+  .active-filters,
+  .button-quiet {
+    width: 100%;
+  }
+
+  .rank-table .cell-bar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .facet-bar-fill {
+    transition: none;
   }
 }
